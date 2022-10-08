@@ -1,8 +1,5 @@
-var PRIVATE_CALENDAR_ID = '';
-var WORK_CALENDAR_ID = '';
-
-var FROM_CALENDAR_ID = PRIVATE_CALENDAR_ID;
-var TO_CALENDAR_ID = PRIVATE_CALENDAR_ID;
+var FROM_CALENDAR_ID = '';
+var TO_CALENDAR_ID = '';
 
 function setInitialSync() {
   // token を取得
@@ -17,107 +14,79 @@ function setInitialSync() {
   properties.setProperty('syncToken', nextSyncToken);
 }
 
-function createEvent(item) {
-  // 新しいカレンダーを作成する
-  let event_options = {
-    summary: 'OoO',
-    start: item.start,
-    end: item.end,
-  }
-  try {
-    // call method to insert/create new event in provided calandar
-    event = Calendar.Events.insert(event_options, TO_CALENDAR_ID);
-    Logger.log('Successfully created event: ' + event.id);
-  } catch (err) {
-    Logger.log('Failed with error %s', err.message);
-  }
-  return event;
+function createEvent(calendar, startTime, endTime) {
+  // カレンダー (CalendarEvent) を作成する
+  let event = calendar.createEvent('OoO', startTime, endTime);
+  event.setVisibility(CalendarApp.Visibility.PRIVATE);
+  let iCalUID = event.getId();
+  return iCalUID;
 }
 
-function updateEvent(item, event_id) {
-  // カレンダーの開始終了時刻を更新する
-  try {
-    event = Calendar.Events.get(TO_CALENDAR_ID, event_id, {}, {});
-    event.start = item.start;
-    event.end = item.end;
-    event = Calendar.Events.update(
-        event,
-        TO_CALENDAR_ID,
-        event.id,
-        {},
-        {}
-    );
-    Logger.log('Successfully updated event: ' + event.id);
-  } catch (e) {
-    Logger.log('Fetch threw an exception: ' + e);
+function updateEvent(calendar, iCalUID, startTime, endTime) {
+  // カレンダー (CalendarEvent) の開始終了時刻を更新する
+  let event = calendar.getEventById(iCalUID);
+  if (event === null) {
+    Logger.log('Event not found', iCalUID);
+    return;
   }
-  return event
+  event.setTime(startTime, endTime);
 }
 
-function deleteEvent(event_id) {
-  // カレンダーを削除扱いにする (delete できなかった)
-  try {
-    event = Calendar.Events.get(TO_CALENDAR_ID, event_id, {}, {});
-    event.summary = 'cancelled';
-    event = Calendar.Events.update(
-        event,
-        TO_CALENDAR_ID,
-        event.id,
-        {},
-        {}
-    );
-    Logger.log('Successfully updated event: ' + event.id);
-  } catch (e) {
-    Logger.log('Fetch threw an exception: ' + e);
+function deleteEvent(calendar, iCalUID) {
+  // カレンダー (CalendarEvent) を削除する
+  let event = calendar.getEventById(iCalUID);
+  if (event === null) {
+    Logger.log('Event not found', iCalUID);
+    return;
   }
-  return event
+  event.deleteEvent();
 }
 
 // カレンダーを変更した際にトリガーされる
 function onCalendarEdit() {
-  // ユーザプロパティから token を取得する
+  // コピー先のカレンダーを取得
+  let calendar = CalendarApp.getCalendarById(TO_CALENDAR_ID);
+  if (calendar === null) {
+    // Calendar not found
+    console.log('Calendar not found', calendarId);
+    return;
+  }
+
+  // ユーザプロパティから syncToken を取得
   var properties = PropertiesService.getUserProperties();
   var nextSyncToken = properties.getProperty('syncToken');
-  
-  // syncToken 以降に変更されたカレンダーを取得
+
+  // syncToken 以降のカレンダーの変更イベントを取得
   var optionalArgs = {
     syncToken: nextSyncToken
   };
   var events = Calendar.Events.list(FROM_CALENDAR_ID, optionalArgs);
   // Logger.log(events);
 
-  // カレンダーの更新
+  // コピー先カレンダーの更新
   for (var item of events.items) {
-    // TODO 後で消す
-    // 自分のカレンダーに作成してるので
-    if (item.summary == 'OoO') {
-      continue;
-    }
-    if (item.summary == 'cancelled') {
-      continue;
-    }
-
     Logger.log(item);
-    var event_id = properties.getProperty(item.id);
-    if (item.status == 'confirmed'){
-      if (event_id === null){
-        // ユーザプロパティに未登録なら新規作成
-        new_event = createEvent(item);
 
-        // event_id の対応を保存
-        properties.setProperty(item.id, new_event.id);
+    // ユーザプロパティから iCalUID を取得
+    let iCalUID = properties.getProperty(item.id);
+    if (item.status == 'confirmed'){
+      if (iCalUID === null){
+        // ユーザプロパティに iCalUID が未登録なら新規作成
+        iCalUID = createEvent(calendar, new Date(item.start.dateTime), new Date(item.end.dateTime));
+        // iCalUID を保存
+        properties.setProperty(item.id, iCalUID); // item.id -> iCalUID
       } else {
-        // ユーザプロパティに登録済みなら更新
-        new_event = updateEvent(item, event_id);
+        // ユーザプロパティに iCalUID が登録済みなら更新
+        updateEvent(calendar, iCalUID, new Date(item.start.dateTime), new Date(item.end.dateTime));
       }
     }else if (item.status == 'cancelled'){
-      // 削除する
-      new_event = deleteEvent(event_id);
+      // 削除
+      deleteEvent(calendar, iCalUID);
       properties.deleteProperty(item.id);
     }
   };
 
-  // token をユーザプロパティに保存
+  // syncToken をユーザプロパティに保存
   var nextSyncToken = events.nextSyncToken;
   properties.setProperty('syncToken', nextSyncToken);
 }
