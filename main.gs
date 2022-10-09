@@ -1,5 +1,6 @@
-var FROM_CALENDAR_ID = '';
-var TO_CALENDAR_ID = '';
+var ScriptProperties = PropertiesService.getScriptProperties()
+var FROM_CALENDAR_ID = ScriptProperties.getProperty('FROM_CALENDAR_ID');
+var TO_CALENDAR_ID = ScriptProperties.getProperty('TO_CALENDAR_ID');
 
 function setInitialSync() {
   // token を取得
