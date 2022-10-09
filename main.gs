@@ -48,7 +48,7 @@ function onCalendarEdit() {
   let calendar = CalendarApp.getCalendarById(TO_CALENDAR_ID);
   if (calendar === null) {
     // Calendar not found
-    console.log('Calendar not found', calendarId);
+    console.log('Calendar not found', calendar);
     return;
   }
 
