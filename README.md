@@ -6,21 +6,21 @@ It is supposed to copy schedules from your personal calendar to your business ca
 
 ## Note
 - Created schedules in the Calender_B are Private.
-- Master schedule is Calender_A. If you update Calender_B, schedules in Calender_A will not be updated.
+- The master schedule is Calender_A. If you update Calender_B, schedules in Calender_A will not be updated.
 
-## Usege
+## Usage
 Create the Google App Scripts Project in the Google Account, which has Calendar_B since Calendar_B is a business one.
 
-### Setting of Google Calendar
-##### Setting of Google Calender A
+### The setting of Google Calendar
+##### The setting of Google Calender A
 - Add a user with Calender_B in the Share with specific people in the Setting and Sharing to share Calendar_A. 
   - Permissions: See only free/busy (hide details)
 
-##### Setting of Google Calendar B
+##### The setting of Google Calendar B
 - There is no need to do particular settings.
 
 
-### Setting of Google App Script
+### The setting of Google App Script
 - Create a new project in the Google Account which has Calendar_B
 - Copy `main.gs`
 - Add the Calendar from Services
