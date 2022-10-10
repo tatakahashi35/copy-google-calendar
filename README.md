@@ -1,7 +1,7 @@
 # share-private-calendar
 
 ## Overview
-copy a schedule created in Google Calendar A (Calender_A) to Google Calendar B (Calender_B). If you update or cancel it in Calender_A, it will apply to Calender_B.
+Copy a schedule created in Google Calendar A (Calender_A) to Google Calendar B (Calender_B). If you update or cancel it in Calender_A, it will apply to Calender_B.
 It is supposed to copy schedules from your personal calendar to your business calendar. It is because all colleagues need set to view your calendar.
 
 ## Note
