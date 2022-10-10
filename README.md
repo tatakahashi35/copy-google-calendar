@@ -17,22 +17,23 @@ Create the Google App Scripts Project in the Google Account, which has Calendar_
   - Permissions: See only free/busy (hide details)
 
 ##### Setting of Google Calendar B
-There is no need to do particular settings.
+- There is no need to do particular settings.
 
 
-### Google App Script の設定
+### Setting of Google App Script
 - Create a new project in the Google Account which has Calendar_B
 - Copy `main.gs`
-- Add the `Calendar` from Services
-- Execute `setInitialSync` function
+- Add the Calendar from Services
+- Set Script Properties
+  - FROM_CALENDAR_ID: email address of Calendar_A
+  - TO_CALENDAR_ID: email address of Calendar_B
+- Execute `setInitialSync` function for initialization
 - Create trigger
   - Choose which function to run: `onCalendarEdit`
   - Select event source: From calendar
   - Enter calendar details: Calender updated
   - Calendar owner email: email address of Calendar_A
-- Set Script Properties
-  - FROM_CALENDAR_ID: email address of Calendar_A
-  - TO_CALENDAR_ID: email address of Calendar_B
+
 
 With the above settings, if you update the schedule in Calender_A, it will be applied to Calender_B.
 
