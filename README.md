@@ -36,8 +36,8 @@ Create the Google App Scripts Project in the Google Account, which has Calendar_
 With the above settings, if you update the schedule in Calender_A, it will be applied to Calender_B.
 
 ## Trouble Shooting
-##### `sync token is no longer valid, a full sync is required`
-Execute `setInitialSync` function for initialization
+- `sync token is no longer valid, a full sync is required`  
+    Execute `setInitialSync` function to reinitialize syncToken. It runs expectedly after reinitializing it.
 
 ## References
 - https://developers.google.com/apps-script/advanced/calendar
