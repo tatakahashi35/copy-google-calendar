@@ -1,4 +1,4 @@
-# share-personal-calendar
+# personal-calendar-sharing
 
 ## Overview
 Copy a schedule created in Google Calendar A (Calender_A) to Google Calendar B (Calender_B). If you update or cancel it in Calender_A, it will apply to Calender_B.
