@@ -5,9 +5,14 @@ var TO_CALENDAR_ID = ScriptProperties.getProperty('TO_CALENDAR_ID');
 function setInitialSync() {
   // token を取得
   var optionalArgs = {
-    timeMin: (new Date()).toISOString()
+    timeMin: (new Date()).toISOString(),
+    maxResults: 100,
   };
-  var events = Calendar.Events.list(FROM_CALENDAR_ID, optionalArgs);
+  do {
+    var events = Calendar.Events.list(FROM_CALENDAR_ID, optionalArgs);
+    pageToken = events.nextPageToken;
+    optionalArgs.pageToken = pageToken;
+  } while (pageToken);
   var nextSyncToken = events.nextSyncToken;
 
   // token をユーザプロパティに保存
@@ -59,33 +64,38 @@ function onCalendarEdit() {
 
   // syncToken 以降のカレンダーの変更イベントを取得
   var optionalArgs = {
-    syncToken: nextSyncToken
+    syncToken: nextSyncToken,
+    maxResults: 100,
   };
-  var events = Calendar.Events.list(FROM_CALENDAR_ID, optionalArgs);
-  // Logger.log(events);
+  do {
+    var events = Calendar.Events.list(FROM_CALENDAR_ID, optionalArgs);
 
-  // コピー先カレンダーの更新
-  for (var item of events.items) {
-    Logger.log(item);
+    // コピー先カレンダーの更新
+    for (var item of events.items) {
+      Logger.log(item);
 
-    // ユーザプロパティから iCalUID を取得
-    let iCalUID = userProperties.getProperty(item.id);
-    if (item.status == 'confirmed'){
-      if (iCalUID === null){
-        // ユーザプロパティに iCalUID が未登録なら新規作成
-        iCalUID = createEvent(calendar, new Date(item.start.dateTime), new Date(item.end.dateTime));
-        // iCalUID を保存
-        userProperties.setProperty(item.id, iCalUID); // item.id -> iCalUID
-      } else {
-        // ユーザプロパティに iCalUID が登録済みなら更新
-        updateEvent(calendar, iCalUID, new Date(item.start.dateTime), new Date(item.end.dateTime));
+      // ユーザプロパティから iCalUID を取得
+      let iCalUID = userProperties.getProperty(item.id);
+      if (item.status == 'confirmed'){
+        if (iCalUID === null){
+          // ユーザプロパティに iCalUID が未登録なら新規作成
+          iCalUID = createEvent(calendar, new Date(item.start.dateTime), new Date(item.end.dateTime));
+          // iCalUID を保存
+          userProperties.setProperty(item.id, iCalUID); // item.id -> iCalUID
+        } else {
+          // ユーザプロパティに iCalUID が登録済みなら更新
+          updateEvent(calendar, iCalUID, new Date(item.start.dateTime), new Date(item.end.dateTime));
+        }
+      }else if (item.status == 'cancelled'){
+        // 削除
+        deleteEvent(calendar, iCalUID);
+        userProperties.deleteProperty(item.id);
       }
-    }else if (item.status == 'cancelled'){
-      // 削除
-      deleteEvent(calendar, iCalUID);
-      userProperties.deleteProperty(item.id);
     }
-  };
+
+    pageToken = events.nextPageToken;
+    optionalArgs.pageToken = pageToken;
+  } while (pageToken);
 
   // syncToken をユーザプロパティに保存
   var nextSyncToken = events.nextSyncToken;
