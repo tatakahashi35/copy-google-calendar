@@ -54,7 +54,7 @@ function onCalendarEdit() {
   let calendar = CalendarApp.getCalendarById(TO_CALENDAR_ID);
   if (calendar === null) {
     // Calendar not found
-    console.log('Calendar not found', calendar);
+    Logger.log('Calendar not found', calendar);
     return;
   }
 
@@ -84,11 +84,21 @@ function onCalendarEdit() {
           userProperties.setProperty(item.id, iCalUID); // item.id -> iCalUID
         } else {
           // ユーザプロパティに iCalUID が登録済みなら更新
-          updateEvent(calendar, iCalUID, new Date(item.start.dateTime), new Date(item.end.dateTime));
+          try {
+            updateEvent(calendar, iCalUID, new Date(item.start.dateTime), new Date(item.end.dateTime));
+          } catch (err) {
+            Logger.log('iCalUID: ', iCalUID);
+            Logger.log('Failed with error %s', err.message);
+          }
         }
       }else if (item.status == 'cancelled'){
         // 削除
-        deleteEvent(calendar, iCalUID);
+        try {
+          deleteEvent(calendar, iCalUID);
+        } catch (err) {
+          Logger.log('iCalUID: ', iCalUID);
+          Logger.log('Failed with error %s', err.message);
+        }
         userProperties.deleteProperty(item.id);
       }
     }
