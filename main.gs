@@ -63,8 +63,14 @@ function onCalendarEdit() {
   var nextSyncToken = userProperties.getProperty('syncToken');
 
   // syncToken 以降のカレンダーの変更イベントを取得
+  // ただし、一年後までのイベントのみ対象とする
+  // これはリピートイベントの場合に、未来のカレンダーを作り続け処理が終わらなくなることを防ぐための措置。(リピート設定をした場合でも、個々のカレンダー単位で処理される)
+  // 一年以上先の単発のカレンダーも同期されないことに注意。
+  var date = new Date();
+  date.setDate(date.getDate() + 365);
   var optionalArgs = {
     syncToken: nextSyncToken,
+    timeMax: date.toISOString(),
     maxResults: 100,
   };
   do {
